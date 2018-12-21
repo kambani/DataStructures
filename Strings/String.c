@@ -150,3 +150,137 @@ Strings should be null terminated.
 
 	return -1;
 }
+
+LONG
+StringCharAt(__in const wchar_t* string, __in PCHAR character, BOOL fromLast) 
+
+/**
+Find the first occurance of a character in a given null terminated string
+fromLast flag to be set true when one desires traversal to be done from the 
+end of the string.
+**/
+
+{
+
+	ULONG StringLength;
+	if (string == NULL || character == NULL) {
+		return -1;
+	}
+
+	StringLength = StringiGetLength(string);
+
+	if (!fromLast) {
+		for (int i = 0; string[i]; i++) {
+			if (string[i] == *character) {
+				return i;
+			}
+		}
+	} else {
+		for (int i = StringLength - 1; i >= 0; i--) {
+			if (string[i] == *character) {
+				return i;
+			}
+		}
+	}
+
+	return -1;
+}
+
+LONG
+StringSubstringBoyerMoore(__in const wchar_t* string, __in const wchar_t* pattern)
+
+/**
+Uses BoyerMoore method to check if pattern appears in a string.
+Returns the position if there is a match else -1.
+Strings should be null terminated.
+**/
+
+{
+	LONG i;
+	LONG j;
+	size_t PatternLength;
+	size_t StringLength;
+
+	if (string == NULL || pattern == NULL) {
+		return -1;
+	}
+
+	PatternLength = StringiGetLength(pattern);
+	StringLength = StringiGetLength(string);
+	i = j = PatternLength - 1;
+	while (i < StringLength) {
+		while (j >= 0) {
+			if (pattern[j] != string[i]) {
+				break;
+			}
+
+			j--;
+			i--;
+		}
+
+		if (j < 0) {
+			return i + 1;
+		}
+
+		i = i + PatternLength - min(j, StringCharAt(pattern, &string[i], TRUE) + 1);
+		j = PatternLength - 1;
+	}
+
+	return -1;
+}
+
+BOOLEAN
+StringIsStringRotationOf(__in const wchar_t* ParentString, __in const wchar_t* String)
+
+/**
+Checks if given string is just a rotation of ParentString.
+**/
+
+{
+	size_t Length;
+	wchar_t* temp;
+	if (ParentString == NULL || String == NULL) {
+		return FALSE;
+	}
+
+	Length = StringiGetLength(ParentString);
+	temp = (wchar_t*)malloc(2 * Length + 1);
+	memcpy(temp, ParentString, Length * sizeof(wchar_t));
+	memcpy((temp + Length), ParentString, Length * sizeof(wchar_t));
+	temp[Length + Length + 1] = L"\o";
+
+	return (StringSubstringBrutForce(ParentString, String)!= -1) ;
+}
+
+BOOLEAN
+StringCheckIfAsciiStringsHaveIdenticalCharCount(__in const wchar_t* string1, __in const wchar_t* string2)
+
+/**
+Function checks if the strings have identical character count.
+For Ascii strings only.
+**/
+
+{
+	LONG CharacterCount[ASCII_CHARACTER_COUNT];
+	memset(&CharacterCount, 0, sizeof(CharacterCount));
+
+	if (string1 == NULL || string2 == NULL) {
+		return FALSE;
+	}
+
+	if (StringiGetLength(string1) != StringiGetLength(string2)) {
+		return FALSE;
+	}
+
+	for (int i = 0; string1[i]; i++) {
+		CharacterCount[string1[i]]++;
+	}
+
+	for (int i = 0; string2[i]; i++) {
+		if (--CharacterCount[string2[i]] < 0) {
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
