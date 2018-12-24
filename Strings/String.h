@@ -25,4 +25,14 @@ StringSubstringBoyerMoore(__in const wchar_t* string, __in const wchar_t* patter
 BOOLEAN
 StringCheckIfAsciiStringsHaveIdenticalCharCount(__in const wchar_t* string1, __in const wchar_t* string2);
 
+VOID
+StringCompressStringCharacterAndCount(__in const wchar_t* string, wchar_t** compressed);
 
+VOID
+Stringitoa_w(__out wchar_t* string, __in LONG number, ULONG base);
+
+LONG
+Stringatoi_w(__in const wchar_t* string);
+
+VOID
+StringReplace(__in wchar_t* string, __in PUCHAR character, __in const wchar_t* pattern);

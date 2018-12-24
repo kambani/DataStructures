@@ -284,3 +284,213 @@ For Ascii strings only.
 
 	return TRUE;
 }
+
+
+VOID
+StringCompressStringCharacterAndCount(__in const wchar_t* string, wchar_t** compressed)
+
+/**
+Compresses a null terminated string in Character<Count> fashion.
+new memory is allocated on the heap for the user.
+User's responsiblity to free the memory after use
+If it computes the compressed string is bigger in length than original
+then it returns NULL in compressed
+**/
+
+{
+	PCHAR Character;
+	ULONG Count;
+	ULONG CompressedLength;
+	WCHAR CountString[100];
+	ULONG StringLength;
+	ULONG Index;
+	wchar_t* Output;
+
+	if (string == NULL) {
+		return;
+	}
+
+	Character = &string[0];
+	CompressedLength = 0;
+	Count = 0;
+	StringLength = 0;
+	Index = 0;
+	Output = *compressed;
+
+	for (int i = 0; string[i]; i++) {
+		if (string[i] == *Character) {
+			Count++;
+		} else {
+			_i64tow(Count, CountString, 10);
+			CompressedLength += StringiGetLength(CountString);
+			CompressedLength += 1;
+			Character = &string[i];
+			Count = 1;
+		}
+
+		//
+		// While we are here, lets also compute string length
+		//
+		StringLength++;
+	}
+
+	_i64tow(Count, CountString, 10);
+	CompressedLength += StringiGetLength(CountString);
+	CompressedLength += 1;
+	wprintf(L"The compressed Length is: %d\n", CompressedLength);
+
+	//
+	// Now lets create a buffer of required size.
+	//
+
+	if (CompressedLength > StringLength) {
+		Output = NULL;
+		return;
+	} else {
+		// One extra for the null terminator.
+		Output = malloc((sizeof(wchar_t) * CompressedLength) + sizeof(wchar_t));
+		Count = 0;
+	}
+
+	Character = &string[0];
+	for (int i = 0; string[i]; i++) {
+		if (string[i] == *Character) {
+			Count++;
+		}
+		else {
+			_i64tow(Count, CountString, 10);
+			Output[Index++] = *Character;
+			CompressedLength = StringiGetLength(CountString);
+			wcscpy(&Output[Index], &CountString[0]);
+			Index += CompressedLength;
+			Character = &string[i];
+			Count = 1;
+		}
+	}
+
+	_i64tow(Count, CountString, 10);
+	Output[Index++] = *Character;
+	CompressedLength = StringiGetLength(CountString);
+	wcscpy(&Output[Index], &CountString[0]);
+
+	*compressed = Output;
+}
+
+VOID
+Stringitoa_w(__out wchar_t* string, __in LONG number, ULONG base)
+
+/**
+Converts a given number with a base into wide char string.
+Negative numbers supported for base 10 only.
+**/
+ 
+{
+	ULONG Remainder;
+	ULONG Index;
+	BOOLEAN IsNegative;
+
+	Index = 0;
+	IsNegative = FALSE;
+	if (string == NULL || base < 0) {
+		return;
+	}
+
+	//
+	// Negative numbers only supported for Decimal number
+	//
+	if (number < 0 && base == 10) {
+		IsNegative = TRUE;
+		number = -1 * number;
+	}
+
+	do {
+		Remainder = number % base;
+		string[Index++] = (Remainder >= 10)? 'A' + (Remainder - 10): Remainder + '0';
+		number = number / base;
+	} while (number != 0);
+
+	if (IsNegative == TRUE) {
+		string[Index++] = '-';
+	}
+
+	string[Index] = '\0';
+	StringReverse(string, StringiGetLength(string));
+}
+
+LONG
+Stringatoi_w(__in wchar_t* string)
+
+/**
+Standard C atoi function.
+**/
+
+{
+	LONG ReturnValue = 0;
+	ULONG Index = 0;
+	BOOLEAN IsNegative = FALSE;
+	if (string == NULL) {
+		return;
+	}
+
+	if (string[Index] == '-') {
+		IsNegative = TRUE;
+		Index++;
+	}
+
+	for (int i = Index; string[i]; i++) {
+		ReturnValue = ReturnValue * 10 + string[i] - '0';
+	}
+
+	if (IsNegative == TRUE) {
+		ReturnValue = -1 * ReturnValue;
+	}
+
+	return ReturnValue;
+}
+
+VOID
+StringReplace(__in wchar_t* string, __in PUCHAR character, __in const wchar_t* pattern)
+
+/**
+Replaces a given character in string with given pattern.
+Assume string has extra space in the end if needed
+**/
+
+{
+	ULONG CharacterCount = 0;
+	ULONG PatternCount = 0;
+	ULONG SpaceNeeded = 0;
+	LONG Index = 0;
+	LONG Index2 = 0;
+	LONG PatternIndex = 0;
+
+	if (string == NULL || character == NULL || pattern == NULL) {
+		return NULL;
+	}
+
+	for (Index; string[Index]; Index++) {
+		if (string[Index] == *character) {
+			CharacterCount++;
+		}
+	}
+
+	for (Index2; pattern[Index2]; Index2++) {
+		PatternCount++;
+	}
+
+	SpaceNeeded = CharacterCount * PatternCount - CharacterCount;
+	Index2 = Index + SpaceNeeded;
+	PatternIndex = PatternCount - 1;
+	for (Index; Index >=0; Index--)
+	{
+		if (string[Index] != *character) {
+			string[Index2--] = string[Index];
+		} else {
+			while (PatternIndex >= 0) {
+				string[Index2--] = pattern[PatternIndex--];
+			}
+
+			PatternIndex = PatternCount - 1;
+		}
+	}
+}
