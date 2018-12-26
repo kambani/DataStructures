@@ -9,7 +9,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Application", "Application\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Strings", "Strings\Strings.vcxproj", "{8B04220A-A96C-4B82-BE19-E41877ED0332}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraphMatrix", "GraphMatrix\GraphMatrix.vcxproj", "{43C4E239-220E-4C55-A05B-0E116404FB09}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Graph", "GraphMatrix\GraphMatrix.vcxproj", "{43C4E239-220E-4C55-A05B-0E116404FB09}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Trees", "Trees\Trees.vcxproj", "{0EDA6E86-30BF-4567-B4C3-946FB78ED251}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stack", "Stack\Stack.vcxproj", "{EBBC186A-9002-416A-92B3-5B36647040EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,22 @@ Global
 		{43C4E239-220E-4C55-A05B-0E116404FB09}.Release|x64.Build.0 = Release|x64
 		{43C4E239-220E-4C55-A05B-0E116404FB09}.Release|x86.ActiveCfg = Release|Win32
 		{43C4E239-220E-4C55-A05B-0E116404FB09}.Release|x86.Build.0 = Release|Win32
+		{0EDA6E86-30BF-4567-B4C3-946FB78ED251}.Debug|x64.ActiveCfg = Debug|x64
+		{0EDA6E86-30BF-4567-B4C3-946FB78ED251}.Debug|x64.Build.0 = Debug|x64
+		{0EDA6E86-30BF-4567-B4C3-946FB78ED251}.Debug|x86.ActiveCfg = Debug|Win32
+		{0EDA6E86-30BF-4567-B4C3-946FB78ED251}.Debug|x86.Build.0 = Debug|Win32
+		{0EDA6E86-30BF-4567-B4C3-946FB78ED251}.Release|x64.ActiveCfg = Release|x64
+		{0EDA6E86-30BF-4567-B4C3-946FB78ED251}.Release|x64.Build.0 = Release|x64
+		{0EDA6E86-30BF-4567-B4C3-946FB78ED251}.Release|x86.ActiveCfg = Release|Win32
+		{0EDA6E86-30BF-4567-B4C3-946FB78ED251}.Release|x86.Build.0 = Release|Win32
+		{EBBC186A-9002-416A-92B3-5B36647040EC}.Debug|x64.ActiveCfg = Debug|x64
+		{EBBC186A-9002-416A-92B3-5B36647040EC}.Debug|x64.Build.0 = Debug|x64
+		{EBBC186A-9002-416A-92B3-5B36647040EC}.Debug|x86.ActiveCfg = Debug|Win32
+		{EBBC186A-9002-416A-92B3-5B36647040EC}.Debug|x86.Build.0 = Debug|Win32
+		{EBBC186A-9002-416A-92B3-5B36647040EC}.Release|x64.ActiveCfg = Release|x64
+		{EBBC186A-9002-416A-92B3-5B36647040EC}.Release|x64.Build.0 = Release|x64
+		{EBBC186A-9002-416A-92B3-5B36647040EC}.Release|x86.ActiveCfg = Release|Win32
+		{EBBC186A-9002-416A-92B3-5B36647040EC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

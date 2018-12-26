@@ -18,3 +18,6 @@ GraphZeroRowColumnof0Element(PGraph Graph);
 
 VOID
 GraphRotate90DegreeRight(PGraph graph);
+
+VOID
+GraphDFS(PGraph graph);

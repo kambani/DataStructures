@@ -153,3 +153,30 @@ Rotates the Matrix by 90 degrees to right
 		}
 	}
 }
+
+VOID
+GraphDFS(PGraph graph, ULONG S, BOOLEAN *vector) 
+
+/**
+Traverse the graph in dfs
+**/
+
+{
+	vector[S] = TRUE;
+	for (int i = 0; i < graph->RowCount; i++) {
+		if (graph->matrix[S][i] != 0 && vector[S] == FALSE) {
+			GraphDFS(graph, S, vector);
+		}
+	}
+}
+
+VOID
+GraphBFS(PGraph graph)
+
+/**
+Traverse the graph in bfs
+**/
+
+{
+
+}
