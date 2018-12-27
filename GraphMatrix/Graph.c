@@ -163,6 +163,7 @@ Traverse the graph in dfs
 
 {
 	vector[S] = TRUE;
+	wprintf(L"%s", 'a' + S);
 	for (int i = 0; i < graph->RowCount; i++) {
 		if (graph->matrix[S][i] != 0 && vector[S] == FALSE) {
 			GraphDFS(graph, S, vector);

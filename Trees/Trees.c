@@ -5,10 +5,11 @@
 #include "..\Stack\Stack.h"
 
 NTSTATUS
-TreeAdd(PTree Tree, ULONG Data)
+TreeAdd(PTree Tree, LONG Data)
 
 /**
-Adds a Node into the BST Tree
+Adds a Node into the BST Tree. Memory for the Node is 
+allocated from the heap. 
 **/
 
 {
@@ -20,6 +21,7 @@ Adds a Node into the BST Tree
 	}
 
 	pnew = (PNode)malloc(sizeof(Node));
+	memset(pnew, 0, sizeof(Node));
 	pnew->Data = Data;
 	if (Tree->Root == NULL) {
 		Tree->Root = pnew;
@@ -130,12 +132,12 @@ from root to the deepest leaf + 1
 	ULONG LeftHeight;
 	ULONG RightHeight;
 	if (Node == NULL) {
-		return 1;
+		return 0;
 	}
 
 	LeftHeight = TreeGetHeight(Node->Left);
 	RightHeight = TreeGetHeight(Node->Right);
-	return (LeftHeight > RightHeight) ? LeftHeight : RightHeight;
+	return (LeftHeight > RightHeight) ? LeftHeight + 1 : RightHeight + 1;
 }
 
 BOOLEAN
@@ -294,4 +296,188 @@ Prints a tree in preorder manner without recurrsion
 	return;
 }
 
+LONG
+TreeiComputeHeightifBalanced(PNode Node)
 
+/**
+This functions gives you the height of the tree,
+if the tree is balanced
+**/
+
+{
+	LONG LeftHeight;
+	LONG RightHeight;
+	ULONG Diff;
+
+	if (Node == NULL) {
+		return 0;
+	}
+
+	LeftHeight = TreeiComputeHeightifBalanced(Node->Left);
+	if (LeftHeight == -1) {
+		return -1;
+	}
+
+	RightHeight = TreeiComputeHeightifBalanced(Node->Left);
+	if (RightHeight == -1) {
+		return -1;
+	}
+
+	Diff = abs(LeftHeight - RightHeight);
+	if (Diff > 1) {
+		return -1;
+	} else {
+		return (LeftHeight > RightHeight) ? LeftHeight + 1 : RightHeight + 1;
+	}
+}
+
+BOOLEAN
+TreeCheckIfBalanced(PNode Node)
+
+/**
+Height of 2 subtrees never differs by 1
+**/
+
+{
+	if (TreeiComputeHeightifBalanced(Node) == -1) {
+		return FALSE;
+	} else {
+		return TRUE;
+	}
+}
+
+VOID
+TreeiMakeTreeFromSortedArray(PTree Tree, PULONG Array, LONG Start, LONG End) 
+
+/**
+Internal for TreemakeMinHeightTreeFromSortedArray
+**/
+
+{
+	ULONG Middle;
+
+	if (Start <= End) {
+		Middle = (Start + End) / 2;
+		TreeAdd(Tree, Array[Middle]);
+		TreeiMakeTreeFromSortedArray(Tree, Array, Start, Middle - 1);
+		TreeiMakeTreeFromSortedArray(Tree, Array, Middle + 1, End);
+	}
+}
+
+NTSTATUS
+TreemakeMinHeightTreeFromSortedArray(PTree *Tree, PULONG Array, ULONG Length)
+
+/**
+Creates a Min Height Tree from a sorted array.
+**/
+
+{
+	
+	NTSTATUS Status;
+	PTree TreeLocal;
+	
+	TreeLocal = *Tree;
+	Status = STATUS_SUCCESS;
+
+	if (Array == NULL || Length <= 0) {
+		TreeLocal = NULL;
+		Status = STATUS_UNSUCCESSFUL;
+		goto Done;
+	}
+
+	TreeLocal = (PTree)malloc(sizeof(Tree));
+	memset(TreeLocal, 0, sizeof(Tree));
+	TreeiMakeTreeFromSortedArray(TreeLocal, Array, 0, Length - 1);
+	
+Done: 
+	*Tree = TreeLocal;
+	return Status;
+}
+
+BOOLEAN
+TreeiCheckBst(PNode Node, LONG Min, LONG Max)
+
+/**
+Checks if a Tree is a BST.
+**/
+
+{
+	if (Node == NULL) {
+		return TRUE;
+	}
+
+	//
+	// Condition should be in accordance to what you have 
+	// during the Add operation. Currently we have allowed
+	// All > and = root to go to right.
+	//
+	if ((Node->Data < Min) || (Node->Data >= Max)) {
+		return FALSE;
+	}
+
+	return TreeiCheckBst(Node->Left, Min, Node->Data) &&
+		   TreeiCheckBst(Node->Right, Node->Data, Max);
+}
+
+BOOLEAN
+TreeCheckIfBST(PTree tree) 
+
+/**
+Wrapper API for TreeiCheckBst.
+**/
+
+{
+	if (tree == NULL || tree->Root == NULL) {
+		return FALSE;
+	}
+
+	return TreeiCheckBst(tree->Root, LONG_MIN, LONG_MAX);
+}
+
+VOID
+TreeiLinkLevels(PNode Node, PLNode HeadsArray, ULONG Level)
+
+/**
+Links all the levels of a Tree
+**/
+
+{
+	LNode Head;
+	if (Node == NULL) {
+		return;
+	}
+
+	Head = HeadsArray[Level];
+	LinkedListAddData(&Head, Node->Data);
+
+	TreeiLinkLevels(Node->Left, HeadsArray, Level + 1);
+	TreeiLinkLevels(Node->Right, HeadsArray, Level + 1);
+}
+
+VOID
+TreeLinkAtLevels(PTree Tree, PLNode* Heads, PULONG Count)
+
+/**
+Joins all the nodes at the same level for a Tree.
+Returns Array of LinkedList heads. Count of array also given back to the user
+**/
+
+{
+	ULONG Levels;
+	PLNode HeadsArray;
+	if (Tree == NULL || Tree->Root == NULL) {
+		return;
+	}
+
+	Levels = TreeGetHeight(Tree->Root);
+	HeadsArray = (PLNode)malloc(sizeof(LNode) * Levels);
+	memset(HeadsArray, 0, sizeof(LNode) * Levels);
+	for (int i = 0; i < Levels; i++) {
+		LinkedListInitialize(&HeadsArray[i]);
+	}
+
+	TreeiLinkLevels(Tree->Root, HeadsArray, 0);
+
+	*Count = Levels;
+	*Heads = HeadsArray;
+}

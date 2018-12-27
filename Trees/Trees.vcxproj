@@ -121,6 +121,9 @@
     <ClCompile Include="Trees.c" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\LinkedList\LinkedList.vcxproj">
+      <Project>{c5130e81-280b-4ea0-af57-268df9e56436}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Stack\Stack.vcxproj">
       <Project>{ebbc186a-9002-416a-92b3-5b36647040ec}</Project>
     </ProjectReference>

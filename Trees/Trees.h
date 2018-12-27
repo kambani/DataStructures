@@ -1,8 +1,9 @@
 #pragma once
 #include <windows.h>
+#include "..\LinkedList\LinkedList.h"
 
 typedef struct Node {
-	ULONG Data;
+	LONG Data;
 	struct Node* Right;
 	struct Node* Left;
 } Node, *PNode;
@@ -13,10 +14,10 @@ typedef struct Tree {
 } Tree, *PTree;
 
 NTSTATUS
-TreeAdd(PTree Tree, ULONG Data);
+TreeAdd(PTree Tree, LONG Data);
 
 VOID
-TreePrintPreOrder(PTree Tree);
+TreePrintPreOrder(PNode Node);
 
 VOID
 TreePrintPostOrder(PNode Node);
@@ -45,5 +46,14 @@ TreeCheckIfCompleteBinaryTree(PNode Node);
 VOID
 TreePreOrderNonRecurssive(PNode Node);
 
-//VOID
-//TreeCheckIfAlmostCompleteBinaryTree()
+BOOLEAN
+TreeCheckIfAlmostCompleteBinaryTree(PNode Node);
+
+NTSTATUS
+TreemakeMinHeightTreeFromSortedArray(PTree *Tree, PULONG Array, ULONG Length);
+
+BOOLEAN
+TreeCheckIfBST(PTree Tree);
+
+VOID
+TreeLinkAtLevels(PTree Tree, PLNode* Heads, PULONG Count);
