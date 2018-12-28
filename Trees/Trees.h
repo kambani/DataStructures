@@ -6,6 +6,15 @@ typedef struct Node {
 	LONG Data;
 	struct Node* Right;
 	struct Node* Left;
+
+	//
+	// Capability to Hook this Node into 
+	// LinkedList/Queue or any other data structure
+	// Application should take care of memory allocation
+	// of Node in such special cases.
+	//
+	UCHAR Variable[1];
+
 } Node, *PNode;
 
 typedef struct Tree {
@@ -57,3 +66,15 @@ TreeCheckIfBST(PTree Tree);
 
 VOID
 TreeLinkAtLevels(PTree Tree, PLNode* Heads, PULONG Count);
+
+PNode
+TreeFindCommonAncestor(PNode Root, PNode p, PNode q);
+
+PNode
+TreeFindNode(PTree Tree, LONG Data);
+
+BOOLEAN
+TreeCheckIfSubtree(PTree t1, PTree t2);
+
+VOID
+TreePrintPathWhichAddToSum(PTree Tree, LONG Sum);

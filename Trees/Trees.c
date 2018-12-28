@@ -25,6 +25,7 @@ allocated from the heap.
 	pnew->Data = Data;
 	if (Tree->Root == NULL) {
 		Tree->Root = pnew;
+		Tree->Count++;
 		return STATUS_SUCCESS;
 	}
 
@@ -47,6 +48,7 @@ allocated from the heap.
 		temp->Left = pnew;
 	}
 
+	Tree->Count++;
 	return STATUS_SUCCESS;
 }
 
@@ -182,6 +184,8 @@ This function checks if a Node exists in the supplied Tree
 			}
 		}
 	}
+
+	return FALSE;
 }
 
 BOOLEAN
@@ -448,6 +452,12 @@ Links all the levels of a Tree
 	}
 
 	Head = HeadsArray[Level];
+
+	//
+	// TODO: Try hooking the PNode to 
+	// LinkedList rather than creating new LNode
+	// and copying the data over.
+	//
 	LinkedListAddData(&Head, Node->Data);
 
 	TreeiLinkLevels(Node->Left, HeadsArray, Level + 1);
@@ -472,7 +482,7 @@ Returns Array of LinkedList heads. Count of array also given back to the user
 	Levels = TreeGetHeight(Tree->Root);
 	HeadsArray = (PLNode)malloc(sizeof(LNode) * Levels);
 	memset(HeadsArray, 0, sizeof(LNode) * Levels);
-	for (int i = 0; i < Levels; i++) {
+	for (ULONG i = 0; i < Levels; i++) {
 		LinkedListInitialize(&HeadsArray[i]);
 	}
 
@@ -480,4 +490,226 @@ Returns Array of LinkedList heads. Count of array also given back to the user
 
 	*Count = Levels;
 	*Heads = HeadsArray;
+}
+
+BOOLEAN
+TreeiCheckIfContains(PNode Root, PNode Node)
+
+/**
+Checks if Root of a given tree contains the given Node
+**/
+
+{
+	if (Root == NULL) {
+		return FALSE;
+	}
+
+	if (Root->Data == Node->Data) {
+		return TRUE;
+	}
+
+	return TreeiCheckIfContains(Root->Left, Node) ||
+		   TreeiCheckIfContains(Root->Right, Node);
+}
+
+PNode
+TreeFindCommonAncestor(PNode Root, PNode p, PNode q)
+
+/**
+Finds the command ancestor between Node p and q of Given Tree
+**/
+
+{
+	BOOLEAN PExistsOnLeft;
+	BOOLEAN QExistsOnLeft;
+
+	if (Root == NULL || p == NULL || q == NULL) {
+		return NULL;
+	}
+
+	PExistsOnLeft = TreeiCheckIfContains(Root->Left, p);
+	QExistsOnLeft = TreeiCheckIfContains(Root->Left, q);
+
+	if (PExistsOnLeft != QExistsOnLeft) {
+		return Root;
+	}
+
+	return (PExistsOnLeft == TRUE) ? TreeFindCommonAncestor(Root->Left, p, q) : 
+								     TreeFindCommonAncestor(Root->Right, p, q);
+}
+
+PNode
+TreeFindNode(PTree Tree, LONG Data)
+
+/**
+Finds the first Node which matches the given 
+Data
+**/
+
+{
+	PNode Runner;
+	if (Tree == NULL || Tree->Root == NULL) {
+		return NULL;
+	}
+
+	Runner = Tree->Root;
+	while (Runner != NULL && Runner->Data != Data) {
+		if (Runner->Data > Data) {
+			Runner = Runner->Left;
+		}
+		else {
+			Runner = Runner->Right;
+		}
+	}
+
+	return Runner;
+}
+
+BOOLEAN
+TreeiMatchTrees(PNode root1, PNode root2, PULONG MatchCount)
+
+/**
+Checks is Trees represented by root1 and root2 are same
+**/
+
+{
+	if (root1 == NULL && root2 == NULL) {
+		return TRUE;
+	}
+
+	if (root1 == NULL) {
+
+		//
+		// We reached end of Tree1 while matching
+		// and Tree2 seems to stil have nodes in that 
+		// direction
+		//
+		return FALSE;
+	}
+	
+	if (root2 == NULL) {
+
+		//
+		// We have reached the end of Tree2 
+		// on this side. But provided we have
+		// reached here with match count != 0
+		// this certainly is candidate for a subtree
+		// from this side of the tree. Return TRUE
+		//
+		if (MatchCount != 0) {
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	}
+
+	if (root1->Data != root2->Data) {
+		return FALSE;
+	}
+
+	(*MatchCount)++;
+	return TreeiMatchTrees(root1->Left, root2->Left, MatchCount) &&
+		   TreeiMatchTrees(root1->Right, root2->Right, MatchCount);
+}
+
+BOOLEAN
+TreeiCheckIfSubTree(PNode root1, PNode root2)
+
+/**
+Internal for TreeCheckIfSubtree. 
+**/
+
+{
+	ULONG MatchCount;
+
+	MatchCount = 0;
+	if (root1 == NULL) {
+		return FALSE;
+	}
+
+	if (root1->Data == root2->Data) {
+		if (TreeiMatchTrees(root1, root2, &MatchCount) == TRUE) {
+			return TRUE;
+		}
+	}
+		
+	return TreeiCheckIfSubTree(root1->Left, root2) ||
+		   TreeiCheckIfSubTree(root1->Right, root2);
+}
+
+BOOLEAN
+TreeCheckIfSubtree(PTree t1, PTree t2)
+
+/**
+Check if t2 is a subtree of t1
+**/
+
+{
+	if (t1 == NULL || t2 == NULL || 
+		t1->Root == NULL || t2->Root == NULL) {
+		return FALSE;
+	}
+
+	return TreeiCheckIfSubTree(t1->Root, t2->Root);
+}
+
+TreeiPrintArray(PLONG Array, ULONG Start, ULONG End)
+
+/**
+Internal for TreeiPrintPathWhichAddToSum.
+**/
+
+{
+	for (int i = Start; i <= End; i++) {
+		wprintf(L"%d->", Array[i]);
+	}
+
+	wprintf(L"\n");
+}
+
+VOID
+TreeiPrintPathWhichAddToSum(PNode Node, PLONG Array, ULONG Level, PLONG Sum)
+
+/**
+Internal of TreePrintPathWhichAddToSum.
+**/
+
+{
+	LONG SumLocal;
+	if (Node == NULL) {
+		return; 
+	}
+
+	SumLocal = 0;
+	Array[Level] = Node->Data;
+	for (int i = Level; i >= 0; i--) {
+		SumLocal += Array[i];
+		if (SumLocal == *Sum) {
+			TreeiPrintArray(Array, i, Level);
+		}
+	}
+
+	TreeiPrintPathWhichAddToSum(Node->Left, Array, Level + 1, Sum);
+	TreeiPrintPathWhichAddToSum(Node->Right, Array, Level + 1, Sum);
+}
+
+VOID
+TreePrintPathWhichAddToSum(PTree Tree, LONG Sum)
+
+/**
+Given a Tree, this function prints all the paths
+whose sum matches the given sum.
+**/
+
+{
+	ULONG Levels;
+	PLONG Array;
+	if (Tree == NULL || Tree->Root == NULL) {
+		return;
+	}
+
+	Levels = TreeGetHeight(Tree->Root);
+	Array = (PLONG)malloc(sizeof(LONG) * Levels);
+	memset(Array, 0, sizeof(LONG) * Levels);
+	TreeiPrintPathWhichAddToSum(Tree->Root, Array, 0, &Sum);
 }
