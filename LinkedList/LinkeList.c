@@ -1,4 +1,3 @@
-#include <ntstatus.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "LinkedList.h"
@@ -67,7 +66,7 @@ Memory for the LNode has to be destroyed by the API during the removal
 	return Status;
 }
 
-NTSTATUS
+PLNode
 LinkedListRemoveNode(PLNode Head, PLNode Node)
 
 /**
@@ -78,8 +77,8 @@ Memory of the LNode will not be freed by the API
 {
 	PLNode Runner;
 	PLNode temp;
-	if (Head == NULL || Head->rear == Head->front) {
-		return STATUS_UNSUCCESSFUL;
+	if (Head == NULL || Head->front == Head) {
+		return NULL;
 	}
 
 	temp = Head->front;
@@ -96,14 +95,14 @@ Memory of the LNode will not be freed by the API
 			}
 			
 			Head->Count--; 
-			return STATUS_SUCCESS;
+			return temp;
 		}
 
 		Runner = temp;
 		temp = temp->front;
 	}
 
-	return STATUS_UNSUCCESSFUL;
+	return NULL;
 }
 
 NTSTATUS
@@ -245,7 +244,7 @@ VOID
 LinkedListReverseList(PLNode Head, PLNode till)
 
 /**
-Reverses the list with updated head untill the "till" node
+Reverses the list from the beginning with updated head uptill the "till" node
 N.B. Original List is modified
 **/
 
@@ -279,6 +278,39 @@ N.B. Original List is modified
 	}
 
 	Head->front = Prev;
+}
+
+VOID
+LinkedListReverseListInBetween(PLNode from, PLNode till)
+
+/**
+To reverse only in between of a list.
+
+from Excluded. Reverse starts from the next node uptill till node (till node excluded).
+from should have min value of Head->front. If Head is supllied, front and rear
+will not be updated.
+**/
+
+{
+	PLNode Current;
+	PLNode Prev;
+	PLNode Next;
+
+	if (from == NULL || till == NULL) {
+		return;
+	}
+
+	Prev = till;
+	Current = from->front;
+
+	while (Current != till) {
+		Next = Current->front;
+		Current->front = Prev;
+		Prev = Current;
+		Current = Next;
+	}
+
+	from->front = Prev;
 }
 
 VOID
@@ -475,5 +507,256 @@ LinkedListFindLoop(PLNode Head)
 	return SlowRunner;
 }
 
+VOID
+LinkedListMergeSortedLists(PLNode Head1, PLNode Head2, PLNode* Head)
 
+/**
+Merges two list sorted list in O(1) Space.
+**/
+
+{
+	PLNode NewHead;
+	*Head = NULL;
+	if (Head1 == NULL || Head2 == NULL) {
+		return;
+	}
+
+	NewHead = malloc(sizeof(LNode));
+	LinkedListInitialize(NewHead);
+
+	while (Head1->front != Head1 && Head2->front != Head2) {
+		if (Head1->front->Data < Head2->front->Data) {
+			LinkedListAddNode(NewHead, LinkedListRemoveNode(Head1, Head1->front));
+		} else {
+			LinkedListAddNode(NewHead, LinkedListRemoveNode(Head2, Head2->front));
+		}
+	}
+
+	//
+	// Drain the remaining
+	//
+	while (Head1->front != Head1) {
+		LinkedListAddNode(NewHead, LinkedListRemoveNode(Head1, Head1->front));
+	}
+
+	while (Head2->front != Head2) {
+		LinkedListAddNode(NewHead, LinkedListRemoveNode(Head2, Head2->front));
+	}
+
+	*Head = NewHead;
+}
+
+LONG
+LinkedListMedianCircularSortedList(PLNode Head, PLNode ArbitraryNode)
+
+/**
+Returns median of a sorted circular linkedlist.
+It is assumed the list is circular and sorted.
+No checks are done for that.
+**/
+
+{
+	PLNode LastNode;
+	PLNode Runner;
+	ULONG Count = 0;
+
+	if (Head == NULL) {
+		return (ULONG) - 1;
+	}
+
+	Runner = ArbitraryNode;
+	LastNode = NULL;
+
+	do {
+		if (Runner->Data > Runner->front->Data) {
+			LastNode = Runner;
+		}
+
+		Runner = Runner->front;
+		Count++;
+	} while (ArbitraryNode != Runner);
+
+	if (LastNode == NULL) {
+		//
+		// The List is Identical. Return data from any Node
+		//
+		return ArbitraryNode->Data;
+	}
+
+	//
+	// Go to the start of the List
+	//
+	LastNode = LastNode->front;
+
+	for (int i = 0; i < ceil(Count / 2.0); i++) {
+		LastNode = LastNode->front;
+	}
+
+	//
+	// If Odd number of elements then return middle
+	// else mean of two
+	//
+	(Count & 1) ? LastNode->Data : ((LastNode->Data + LastNode->Data) / 2);
+}
+
+VOID
+LinkedListEvenOddMerge(PLNode Head)
+
+/**
+N.B. Modifies the original list
+Clubs all the nodes in even position followed by ones at odd
+**/
+
+{
+	PLNode Even;
+	PLNode Odd;
+	PLNode PrevOdd;
+
+	if (Head->Count <= 2) {
+		//
+		// We need atleast 2 elements for merge
+		//
+		return;
+	}
+
+	Even = Head->front;
+	Odd = Even->front;
+	PrevOdd = Odd;
+
+	while (Even != Head && Even->front != Head
+		&& Odd != Head && Odd->front != Head) {
+		Even->front = Even->front->front;
+		Odd->front = Odd->front->front;
+		Even = Even->front;
+		Odd = Odd->front;
+	}
+
+	Even->front = PrevOdd;
+}
+
+PLNode
+LinkedListDetectOverlap(PLNode Head1, PLNode Head2)
+
+/**
+Detects overlap between two lists.
+The lists can have cycle
+Returns the Node where Overlap hapens
+**/
+
+{
+	PLNode ListOneLoop;
+	PLNode ListTwoLoop;
+	ULONG ListOneLength;
+	ULONG ListTwoLength;
+	PLNode Runner1;
+	PLNode Runner2;
+
+	if (Head1 == NULL || Head2 == NULL) {
+		return;
+	}
+
+	ListOneLength = Head1->Count;
+	ListTwoLength = Head2->Count;
+	Runner1 = Head1->front;
+	Runner2 = Head2->front;
+
+	//
+	// Check if there are cycles
+	//
+	ListOneLoop = LinkedListFindLoop(Head1);
+	ListTwoLoop = LinkedListFindLoop(Head2);
+
+	if (ListOneLoop == NULL && ListTwoLoop == NULL) {
+		//
+		// Linear Lists
+		//
+		for (int i = 0; i < abs(ListOneLength - ListTwoLength); i++) {
+			if (ListOneLength > ListTwoLength) {
+				Runner1 = Runner1->front;
+			} else {
+				Runner2 = Runner2->front;
+			}
+		}
+
+		while (Runner1 != Head1 && Runner2 != Head2) {
+			if (Runner1 == Runner2) {
+				return Runner1;
+			}
+
+			Runner1 = Runner1->front;
+			Runner2 = Runner2->front;
+		}
+
+		return NULL;
+
+	} else if (ListOneLoop == NULL || ListTwoLoop == NULL) {
+		//
+		// One list has cycle, other doesnt. They cant overlap
+		//
+		return NULL;
+	} else {
+		//
+		// Both have cycles. Try to detect if they have loops
+		//
+		Runner1 = ListOneLoop;
+		do {
+			if (Runner1 = ListTwoLoop) {
+				return Runner1;
+			}
+
+			Runner1 = Runner1->front;
+		} while (Runner1 != ListOneLoop);
+
+		//
+		// There are cycles but lists are disjoint
+		//
+		return NULL;
+	}
+}
+
+VOID
+LinkedListZip(PLNode Head)
+
+/**
+Zips a list in following manner
+0->1->2->3->4 = 0->4->1->3->2
+**/
+
+{
+	PLNode Middle;
+	PLNode Current;
+	PLNode Reverse;
+	PLNode NextC;
+	PLNode NextR;
+
+	if (Head == NULL) {
+		return;
+	}
+
+	Middle = LinkedListFindMiddle(Head);
+
+	//
+	// Reverse the list after middle point
+	//
+	LinkedListReverseListInBetween(Middle, Head);
+	Reverse = Middle->front;
+
+	//
+	// Break the List After mid Point
+	//
+	Middle->front = Head;
+
+	//
+	// Now Zip the List
+	//
+	Current = Head->front;
+	while (Current != Head && Reverse != Head) {
+		NextC = Current->front;
+		Current->front = Reverse;
+		NextR = Reverse->front;
+		Current = NextC;
+		Reverse->front = Current;
+		Reverse = NextR;
+	}
+}
 

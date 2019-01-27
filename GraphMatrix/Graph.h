@@ -1,5 +1,8 @@
 #pragma once
+#include <ntstatus.h>
+#define WIN32_NO_STATUS
 #include <windows.h>
+#undef WIN32_NO_STATUS
 
 typedef struct _Graph {
 	PULONG* matrix;
