@@ -652,6 +652,7 @@ Check if t2 is a subtree of t1
 	return TreeiCheckIfSubTree(t1->Root, t2->Root);
 }
 
+VOID
 TreeiPrintArray(PLONG Array, ULONG Start, ULONG End)
 
 /**
@@ -711,4 +712,50 @@ whose sum matches the given sum.
 	Array = (PLONG)malloc(sizeof(LONG) * Levels);
 	memset(Array, 0, sizeof(LONG) * Levels);
 	TreeiPrintPathWhichAddToSum(Tree->Root, Array, 0, &Sum);
+}
+
+VOID
+TreeMorrisTraversal(PTree Tree)
+
+/**
+Inorder Traversal of a tree without using o(h)
+stack space which usually happens in recursive traversal or
+other iterative solution
+**/
+
+{
+	PNode Node;
+	PNode pre;
+	if (Tree == NULL || Tree->Root == NULL) {
+		return;
+	}
+
+	Node = Tree->Root;
+
+	while (Node != NULL) {
+		if (Node->Left) {
+			pre = Node->Left;
+			while (pre != NULL && pre->Right != NULL) {
+				pre = pre->Right;
+			}
+
+			if (pre->Right == NULL) {
+				//
+				// Make new Link.
+				//
+				pre->Right = Node;
+				Node = Node->Left;
+			} else {
+				//
+				// Link Exists, break it.
+				//
+				wprintf(L"%d->", Node->Data);
+				pre->Right = NULL;
+				Node = Node->Right;
+			}
+		} else {
+			wprintf(L"%d->", Node->Data);
+			Node = Node->Right;
+		}
+	}
 }

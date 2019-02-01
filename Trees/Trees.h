@@ -59,7 +59,7 @@ VOID
 TreePreOrderNonRecurssive(PNode Node);
 
 BOOLEAN
-TreeCheckIfAlmostCompleteBinaryTree(PNode Node);
+TreeCheckIfBalanced(PNode Node);
 
 NTSTATUS
 TreemakeMinHeightTreeFromSortedArray(PTree *Tree, PULONG Array, ULONG Length);
@@ -81,3 +81,6 @@ TreeCheckIfSubtree(PTree t1, PTree t2);
 
 VOID
 TreePrintPathWhichAddToSum(PTree Tree, LONG Sum);
+
+VOID
+TreeMorrisTraversal(PTree Tree);
