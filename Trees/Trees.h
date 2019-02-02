@@ -10,13 +10,10 @@ typedef struct Node {
 	struct Node* Right;
 	struct Node* Left;
 
-	//
-	// Capability to Hook this Node into 
-	// LinkedList/Queue or any other data structure
-	// Application should take care of memory allocation
-	// of Node in such special cases.
-	//
-	UCHAR Variable[1];
+	union {
+		struct Node* Parent;
+		PLNode LNode;
+	};
 
 } Node, *PNode;
 
@@ -84,3 +81,12 @@ TreePrintPathWhichAddToSum(PTree Tree, LONG Sum);
 
 VOID
 TreeMorrisTraversal(PTree Tree);
+
+BOOLEAN
+TreeCheckIfSymmetric(PTree Tree);
+
+VOID
+TreePrintInorderWithParentPointer(PTree Tree);
+
+VOID
+TreePrintExterior(PTree Tree);

@@ -24,6 +24,7 @@ allocated from the heap.
 	pnew->Data = Data;
 	if (Tree->Root == NULL) {
 		Tree->Root = pnew;
+		pnew->Parent = NULL;
 		Tree->Count++;
 		return STATUS_SUCCESS;
 	}
@@ -46,6 +47,11 @@ allocated from the heap.
 	else {
 		temp->Left = pnew;
 	}
+
+	//
+	// Link to Parent
+	//
+	pnew->Parent = temp;
 
 	Tree->Count++;
 	return STATUS_SUCCESS;
@@ -321,7 +327,7 @@ if the tree is balanced
 		return -1;
 	}
 
-	RightHeight = TreeiComputeHeightifBalanced(Node->Left);
+	RightHeight = TreeiComputeHeightifBalanced(Node->Right);
 	if (RightHeight == -1) {
 		return -1;
 	}
@@ -660,7 +666,7 @@ Internal for TreeiPrintPathWhichAddToSum.
 **/
 
 {
-	for (int i = Start; i <= End; i++) {
+	for (unsigned int i = Start; i <= End; i++) {
 		wprintf(L"%d->", Array[i]);
 	}
 
@@ -735,7 +741,7 @@ other iterative solution
 	while (Node != NULL) {
 		if (Node->Left) {
 			pre = Node->Left;
-			while (pre != NULL && pre->Right != NULL) {
+			while (pre->Right != NULL && pre->Right != Node) {
 				pre = pre->Right;
 			}
 
@@ -749,13 +755,157 @@ other iterative solution
 				//
 				// Link Exists, break it.
 				//
-				wprintf(L"%d->", Node->Data);
+				wprintf(L"%d ", Node->Data);
 				pre->Right = NULL;
 				Node = Node->Right;
 			}
 		} else {
-			wprintf(L"%d->", Node->Data);
+			wprintf(L"%d ", Node->Data);
 			Node = Node->Right;
 		}
 	}
+
+	wprintf(L"\n");
+}
+
+BOOLEAN
+TreeiCheckSymmetry(PNode Node1, PNode Node2)
+
+/**
+Internal to TreeCheckIfSymmetric
+**/
+
+{
+	if (Node1 == NULL && Node2 == NULL) {
+		return TRUE;
+	}
+
+	if (Node1 == NULL || Node2 == NULL) {
+		return FALSE;
+	}
+
+	if (Node1->Data == Node2->Data) {
+		return TreeiCheckSymmetry(Node1->Left, Node2->Right) &&
+			   TreeiCheckSymmetry(Node1->Right, Node2->Left);
+	} else {
+		return FALSE;
+	}
+}
+
+BOOLEAN
+TreeCheckIfSymmetric(PTree Tree)
+
+/**
+Checks if Tree is symmetric
+**/
+
+{
+	if (Tree != NULL || Tree->Root != NULL) {
+		return TreeiCheckSymmetry(Tree->Root->Left, 
+								  Tree->Root->Right);
+	} else {
+		return FALSE;
+	}
+}
+
+VOID
+TreePrintInorderWithParentPointer(PTree Tree)
+
+/**
+Prints the tree inorder manner when pointer to parent
+exists
+**/
+
+{
+	PNode Current;
+	PNode Prev;
+	PNode Next;
+	if (Tree == NULL || Tree->Root == NULL) {
+		return;
+	}
+
+	Current = Tree->Root;
+	Prev = NULL;
+	Next = NULL;
+	while (Current != NULL) {
+		if (Prev == NULL || Prev->Right == Current
+			|| Prev->Left == Current) {
+			if (Current->Left != NULL) {
+				Next = Current->Left;
+			} else {
+				wprintf(L"%d ", Current->Data);
+				Next = Current->Right ? Current->Right : Current->Parent;
+			}
+		} else if (Current->Left == Prev) {
+			wprintf(L"%d ", Current->Data);
+			Next = Current->Right ? Current->Right : Current->Parent;
+		} else {
+			Next = Current->Parent;
+		}
+
+		Prev = Current;
+		Current = Next;
+	}
+
+	wprintf(L"\n");
+}
+
+VOID
+TreeiPrintLeftExterior(PNode Root, BOOLEAN isBoundry)
+
+/**
+Prints the Left exterior of a Tree in 
+clock wise fashion given Root of the node
+**/
+
+{
+	if (Root == NULL) {
+		return;
+	}
+
+	if (isBoundry == TRUE || 
+		(Root->Left == NULL && Root->Right == NULL)) {
+		wprintf(L"%d ", Root->Data);
+	}
+
+	TreeiPrintLeftExterior(Root->Left, isBoundry);
+	TreeiPrintLeftExterior(Root->Right, isBoundry && Root->Left == NULL);
+}
+
+VOID
+TreeiPrintRightExterior(PNode Root, BOOLEAN isBoundry)
+
+/**
+Prints the Right exterior of a Tree in
+clock wise fashion given Root of the node
+**/
+
+{
+	if (Root == NULL) {
+		return;
+	}
+	
+	TreeiPrintRightExterior(Root->Left, isBoundry && Root->Right == NULL);
+	TreeiPrintRightExterior(Root->Right, isBoundry);
+	if (isBoundry == TRUE ||
+		(Root->Left == NULL && Root->Right == NULL)) {
+		wprintf(L"%d ", Root->Data);
+	}
+}
+
+VOID
+TreePrintExterior(PTree Tree)
+
+/**
+Prints the exterior of a Tree
+**/
+
+{
+	if (Tree != NULL && Tree->Root != NULL) {
+		wprintf(L"%d ", Tree->Root->Data);
+		TreeiPrintLeftExterior(Tree->Root->Left, TRUE);
+		TreeiPrintRightExterior(Tree->Root->Right, TRUE);
+	}
+
+	wprintf(L"\n");
 }
