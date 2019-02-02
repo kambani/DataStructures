@@ -909,3 +909,70 @@ Prints the exterior of a Tree
 
 	wprintf(L"\n");
 }
+
+ULONG
+UtilityFindInArray(PULONG Array, 
+				   ULONG Start,
+				   ULONG End,
+				   LONG Number)
+
+{
+	if (Array == NULL) {
+		return (ULONG)-1;
+	}
+
+	for (unsigned int i = Start; i <= End; i++) {
+		if (Array[i] == Number) {
+			return i;
+		}
+	}
+
+	return (ULONG)-1;
+}
+
+VOID
+TreeiConstructFromPreAndInorder(ULONG PreStart, ULONG PreEnd, PULONG Preorder,
+								ULONG InStart, ULONG InEnd, PULONG Inorder,
+								PTree Tree)
+
+/**
+Internal to TreeConstructFromPreAndInorder
+**/
+
+{
+	ULONG IndexInInorder;
+	ULONG LeftTreeSize;
+
+	if (PreStart <= PreEnd && InStart <= InEnd) {
+
+		IndexInInorder = UtilityFindInArray(Inorder, InStart, InEnd, Preorder[PreStart]);
+		LeftTreeSize = IndexInInorder - InStart;
+
+		TreeAdd(Tree, Preorder[PreStart]);
+		TreeiConstructFromPreAndInorder(PreStart + 1, PreStart + LeftTreeSize, Preorder,
+										InStart, IndexInInorder - 1, Inorder,
+										Tree);
+		TreeiConstructFromPreAndInorder(PreStart + LeftTreeSize + 1, PreEnd, Preorder,
+										IndexInInorder + 1, InEnd, Inorder,
+										Tree);
+	}
+}
+
+VOID
+TreeConstructFromPreAndInorder(PULONG Inorder, ULONG InorderSize,
+							   PULONG Preorder, ULONG PreorderSize,
+							   PTree* Tree)
+
+/**
+Given Pre-order and In-order traversal of a tree, construct the Tree
+**/
+
+{
+	PTree TreeTemp = malloc(sizeof(Tree));
+	memset(TreeTemp, 0, sizeof(Tree));
+	TreeiConstructFromPreAndInorder(0, PreorderSize - 1, Preorder,
+									0, InorderSize - 1, Inorder,								
+									TreeTemp);
+
+	*Tree = TreeTemp;
+}

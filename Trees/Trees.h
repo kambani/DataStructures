@@ -90,3 +90,8 @@ TreePrintInorderWithParentPointer(PTree Tree);
 
 VOID
 TreePrintExterior(PTree Tree);
+
+VOID
+TreeConstructFromPreAndInorder(PULONG Inorder, ULONG InorderSize,
+							   PULONG Preorder, ULONG PreorderSize,
+							   PTree* Tree);
