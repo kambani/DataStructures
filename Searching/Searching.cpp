@@ -277,9 +277,10 @@ LONG
 BinarySearchInArrayOfUnknownLen(std::vector<int> Array, LONG k)
 
 /**
-[UnSupported]. C/C++ Does not support Out of bound check
-Array has to be sorted else output is unknown
 Binary Search in an Array of unknown Length
+Array has to be sorted else output is unknown
+Array has to be in the form of vector because C/C++
+does not throw exception on Out of Bounds error.
 **/
 
 {
@@ -351,4 +352,334 @@ Binary Search in an Array of unknown Length
 	}
 
 	return -1;
+}
+
+VOID
+FindMinAndMaxInArray(PLONG Array, ULONG NumElements)
+
+/**
+Find Min and Max simultanously in an Array
+**/
+
+{
+	LONG Min;
+	LONG Max;
+	ULONG Index;
+	LONG CurrentMin;
+	LONG CurrentMax;
+
+	Index = 0;
+	if (Array == NULL || NumElements < 2) {
+		return;
+	}
+
+	Min = Array[Index] < Array[Index + 1] ? Array[Index] : Array[++Index];
+	Max = Index == 0 ? Array[++Index] : Array[0];
+
+	Index++;
+	for (; Index < NumElements - 1; Index = Index + 2) {
+		CurrentMin = Array[Index] < Array[Index + 1] ? Array[Index] : Array[Index + 1];
+		CurrentMax = Array[Index] > Array[Index + 1] ? Array[Index] : Array[Index + 1];
+
+		if (CurrentMin < Min) {
+			Min = CurrentMin;
+		}
+
+		if (CurrentMax > Max) {
+			Max = CurrentMax;
+		}
+	}
+	
+	if (NumElements % 2 == 1) {
+		//
+		// Odd Number of elements
+		// we have missed the last one
+		//
+		Min = Array[NumElements - 1] < Min ? Array[NumElements - 1] : Min;
+		Max = Array[NumElements - 1] > Max ? Array[NumElements - 1] : Max;
+	}
+
+	wprintf(L"Min: %d. Max: %d", Min, Max);
+}
+
+unsigned int rand_interval(unsigned int min, unsigned int max)
+{
+	int r;
+	const unsigned int range = 1 + max - min;
+	const unsigned int buckets = RAND_MAX / range;
+	const unsigned int limit = buckets * range;
+
+	/* Create equal size buckets all in a row, then fire randomly towards
+	 * the buckets until you land in one of them. All buckets are equally
+	 * likely. If you land off the end of the line of buckets, try again. */
+	do
+	{
+		r = rand();
+	} while (r >= limit);
+
+	return min + (r / buckets);
+}
+
+LONG
+iPartitionArray(PLONG Array, LONG Low, LONG High, LONG Pivot)
+
+{
+	LONG PivotValue;
+	LONG Index;
+	LONG temp;
+
+	PivotValue = Array[Pivot];
+	Array[Pivot] = Array[High];
+	Array[High] = PivotValue;
+	Index = 0;
+
+	for (int i = Low; i < High; i++) {
+		if (Array[i] > PivotValue) {
+			temp = Array[i];
+			Array[i] = Array[Index];
+			Array[Index++] = temp;
+		}
+	}
+
+	temp = Array[High];
+	Array[High] = PivotValue;
+	Array[Index] = temp;
+
+	return Index;
+}
+
+LONG
+FindKLargest(PLONG Array, ULONG NumElements, ULONG k)
+
+/**
+Finds the Kth largest element in a random array
+**/
+
+{
+	LONG Low;
+	LONG High;
+	LONG p;
+
+	if (Array == NULL) {
+		return LONG_MIN;
+	}
+
+	Low = 0;
+	High = NumElements - 1;
+
+	while (Low <= High) {
+		p = iPartitionArray(Array, Low, High, rand_interval(Low, High));
+		if (p == k - 1) {
+			return Array[p];
+		} else if (p > k - 1) {
+			High = p - 1;
+		} else {
+			Low = p + 1;
+		}
+	}
+
+	return -1;
+}
+
+LONG
+FindKthSmallestFromTwoSortedArray(PLONG Array1, ULONG NumElements1, PLONG Array2, ULONG NumElements2, ULONG K)
+
+/**
+Given two sorted arrays, find the kth smallest array.
+**/
+
+{
+	ULONG Step;
+	ULONG Index1;
+	ULONG Index2;
+	ULONG StepArray1;
+	ULONG StepArray2;
+
+	Index1 = 0;
+	Index2 = 0;
+	Step = 0;
+
+	while ((Index1 + Index2) < K - 1) {
+		Step = (K - Index1 - Index2) / 2;
+		StepArray1 = Index1 + Step;
+		StepArray2 = Index2 + Step;
+
+		if ((StepArray1 - 1 < NumElements1) && 
+			(StepArray2 - 1 >= NumElements2 || Array1[StepArray1 - 1] < Array2[StepArray2 - 1])) {
+			Index1 = StepArray1;
+		} else {
+			Index2 = StepArray2;
+		}
+	}
+
+	if ((Index1 < NumElements1) &&
+		(Index2 >= NumElements2 || Array1[Index1] < Array2[Index2])) {
+		return Array1[Index1];
+	} else {
+		return Array2[Index2];
+	}
+}
+
+LONG
+FindTheMissingElementInASequence(PLONG Array, ULONG N, ULONG NumElements)
+
+/**
+Given an array of length N-1 and Number N, find the element missing from 
+range 1 to N
+**/
+
+{
+	ULONG XOR1;
+	ULONG XORArray;
+	unsigned int i;
+
+	if (NumElements != N - 1) {
+		return LONG_MIN;
+	}
+
+	for (i = 1; i <= N; i++) {
+		XOR1 = XOR1 ^ i;
+	}
+
+	for (i = 0; i < NumElements; i++) {
+		XORArray = XORArray ^ Array[i];
+	}
+
+	//
+	// Missing element.
+	//
+	return XOR1 ^ XORArray;
+}
+
+VOID
+FindTheMisingAndRepeatingElement(PLONG Array, ULONG N, ULONG NumElements)
+
+/**
+Note: It doesnt matter in what order you xor. A XOR B XOR C = C XOR A XOR B
+Hence you can club all xoring in one loop for this problem
+
+Given an array of length N and Number N, find the element missing and the element 
+repeating from range 1 to N.
+
+Take XOR of array and (1 to N range). The output will be a number which has bits set
+where the missing and repeating elements have their bits set.
+
+Now find the first bit set from LSB from the above output.
+
+Now XOR all elements from array and (1 to N range) which has that first bit set from LSB.
+Output will be either missing element or the repeating element.
+**/
+
+{
+	LONG XORArrayAndRange;
+	LONG Mask;
+	LONG MissingOrRepeatingElement;
+	LONG FirstBitSet;
+
+	FirstBitSet = 0;
+	XORArrayAndRange = 0;
+	Mask = 0;
+	MissingOrRepeatingElement = 0;
+
+	if (NumElements != N) {
+		return;
+	}
+
+	//
+	// XOR all elements in array and the range.
+	//
+	for (unsigned int i = 1; i <= N; i++) {
+		XORArrayAndRange ^= i;
+		XORArrayAndRange ^= Array[i - 1];
+	}
+	
+	//
+	// Find the first bit set from LSB.
+	//
+	Mask = ~(XORArrayAndRange - 1);
+	FirstBitSet = XORArrayAndRange & Mask;
+
+	//
+	// XOR all the elements with the above bit set
+	//
+	for (unsigned int i = 1; i <= N; i++) {
+		if (((FirstBitSet & i) > 0)) {
+			MissingOrRepeatingElement ^= i;
+		}
+
+		if (((FirstBitSet & Array[i - 1]) > 0)) {
+			MissingOrRepeatingElement ^= Array[i - 1];
+		}
+	}
+
+	for (unsigned int i = 0; i < NumElements; i++) {
+		if (Array[i] == MissingOrRepeatingElement) {
+			wprintf(L"The repeating element is: %d\n", Array[i]);
+			wprintf(L"The missing element is: %d\n", Array[i] ^ XORArrayAndRange);
+			return;
+		}
+	}
+
+	wprintf(L"The repeating element is: %d\n", MissingOrRepeatingElement ^ XORArrayAndRange);
+	wprintf(L"The missing element is: %d\n", MissingOrRepeatingElement);
+}
+
+VOID
+SearchArrayWithCloseEntries(PLONG Array, ULONG NumElements, LONG K)
+
+/**
+Find position of an element k if it exists.
+The Array is a Close entry Array meaning difference between consecutive
+elements is no more than 1
+**/
+
+{
+	ULONG i = 0;
+	if (Array == NULL) {
+		return;
+	}
+
+	while (i < NumElements) {
+		if (Array[i] != K) {
+			i = i + abs((K - Array[i]));
+		}
+
+		if (Array[i] == K) {
+			wprintf(L"%d ", i);
+			i++;
+		}
+	}
+}
+
+LONG
+FindMoreThanHalfRepeatingNumberInLargeArray(PLONG Array, ULONG NumElements)
+
+/**
+Given a very large array/stream how would you find most recurring element.
+Provided important condition that the most recurring element occurs for more than
+half the length of the array/stream
+O(1) Space and only Single pass allowed
+**/
+
+{
+	ULONG Count;
+	ULONG i;
+	LONG Candidate;
+
+	Candidate = LONG_MIN;
+	Count = 0;
+	i = 0;
+
+	while (i < NumElements) {
+		if (Count == 0) {
+			Candidate = Array[i];
+			Count = 1;
+		} else if (Candidate != Array[i]) {
+			Count--;
+		} else {
+			Count++;
+		}
+	}
+
+	return Candidate;
 }

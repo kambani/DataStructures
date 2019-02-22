@@ -596,7 +596,7 @@ No checks are done for that.
 	// If Odd number of elements then return middle
 	// else mean of two
 	//
-	(Count & 1) ? LastNode->Data : ((LastNode->Data + LastNode->Data) / 2);
+	return (Count & 1) ? LastNode->Data : ((LastNode->Data + LastNode->Data) / 2);
 }
 
 VOID
