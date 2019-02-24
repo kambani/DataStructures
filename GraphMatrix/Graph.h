@@ -10,6 +10,12 @@ typedef struct _Graph {
 	ULONG ColumnCount;
 } Graph, *PGraph;
 
+typedef struct _Edge {
+	ULONG Src;
+	ULONG Dst;
+	ULONG Weight;
+} Edge, *PEdge;
+
 NTSTATUS
 GraphInitMatrix(PGraph Graph, ULONG NumElements, BOOLEAN GeneratePseudoRandomNumber);
 
@@ -23,4 +29,10 @@ VOID
 GraphRotate90DegreeRight(PGraph graph);
 
 VOID
-GraphDFS(PGraph graph);
+GraphDFS(PGraph graph, ULONG S, BOOLEAN *vector);
+
+VOID
+GraphMinSpanningTreePrims(PGraph Graph);
+
+VOID
+GraphMinSpanningTreeKruskals(PGraph Graph);
