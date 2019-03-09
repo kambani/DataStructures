@@ -36,3 +36,6 @@ GraphMinSpanningTreePrims(PGraph Graph);
 
 VOID
 GraphMinSpanningTreeKruskals(PGraph Graph);
+
+BOOLEAN
+GraphDetectHamiltonianCycle(PGraph Graph, ULONG StartVertex);

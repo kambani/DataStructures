@@ -1,8 +1,12 @@
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <queue>
 #include "Graph.h"
 
+using namespace std;
 #define MAX_EDGE_WEIGHT 64
+#define INVALID_MATRIX_ENTRY ULONG_MAX
 
 NTSTATUS
 GraphInitMatrix(PGraph Graph, ULONG NumElements, BOOLEAN GeneratePseudoRandomNumber)
@@ -13,7 +17,9 @@ Generates random values if GeneratePseudoRandomNumber is TRUE.
 **/
 
 {
-	if (Graph == NULL || NumElements == 0) {
+    ULONG Input;
+
+    if (Graph == NULL || NumElements == 0) {
 		return STATUS_UNSUCCESSFUL;
 	}
 
@@ -29,11 +35,34 @@ Generates random values if GeneratePseudoRandomNumber is TRUE.
 					Graph->matrix[i][j] = rand() % MAX_EDGE_WEIGHT;
 					Graph->matrix[j][i] = Graph->matrix[i][j];
 				} else if (i == j) {
-					Graph->matrix[i][j] = ULONG_MAX;
+					Graph->matrix[i][j] = INVALID_MATRIX_ENTRY;
 				}
 			}
 		}
-	}
+	} else {
+        //
+        // Take Input from user
+        //
+
+        for (unsigned int i = 0; i < NumElements; i++) {
+            for (unsigned int j = 0; j < NumElements; j++) {
+                if (i == j) {
+                    Graph->matrix[i][j] = INVALID_MATRIX_ENTRY;
+                } else {
+                    wprintf(L"Enter Input for [%c][%c]\n", (65 + i), (65 + j));
+                    cin >> Input;
+                    if (Input == 0) {
+                        //
+                        // We do not want zero weight edge
+                        //
+                        Graph->matrix[i][j] = INVALID_MATRIX_ENTRY;
+                    } else {
+                        Graph->matrix[i][j] = Input;
+                    }
+                }
+            }
+        }
+    }
 
 	Graph->RowCount = NumElements;
 	Graph->ColumnCount = NumElements;
@@ -164,13 +193,16 @@ GraphDFS(PGraph graph, ULONG S, BOOLEAN *vector)
 
 /**
 Traverse the graph in dfs
+O(N ^ 2). Because we visit N * N vertices even if 
+they are connected or not.
+Can be improved to O(V + E) if used adjacency list.
 **/
 
 {
 	vector[S] = TRUE;
 	wprintf(L"%c", 'a' + S);
 	for (unsigned int i = 0; i < graph->RowCount; i++) {
-		if (graph->matrix[S][i] != 0 && vector[S] == FALSE) {
+		if (graph->matrix[S][i] != INVALID_MATRIX_ENTRY && vector[S] == FALSE) {
 			GraphDFS(graph, S, vector);
 		}
 	}
@@ -180,18 +212,48 @@ VOID
 GraphBFS(PGraph graph)
 
 /**
-Traverse the graph in bfs
+Breadth First Search.
+O(N ^ 2). For Adjacency matrix.
+O(V + E) for AL.
 **/
 
 {
+    ULONG NumElements;
+    PBOOLEAN Visited;
+    ULONG Vertex;
+    queue<unsigned int> Queue;
 
+    if (graph == NULL) {
+        return;
+    }
+
+    NumElements = graph->RowCount;
+    Visited = (PBOOLEAN)malloc(sizeof(BOOLEAN) * NumElements);
+    memset(Visited, 0, NumElements);
+    Vertex = 0;
+    Queue.push(Vertex);
+    Visited[Vertex] = TRUE;
+
+    while (Queue.empty() == FALSE) {
+        Vertex = Queue.front();
+        Queue.pop();
+        for (unsigned int i = 0; i < NumElements; i++) {
+            if (graph->matrix[Vertex][i] != INVALID_MATRIX_ENTRY && Visited[i] != TRUE) {
+                wprintf(L"%lu ", i);
+                Visited[i] = TRUE;
+                Queue.push(i);
+            }
+        }
+    }
 }
+
 
 VOID
 GraphMinSpanningTreePrims(PGraph Graph)
 
 /**
 Prints Min spannning tree for a given graph.
+O(V ^ 2).
 **/
 
 {
@@ -210,11 +272,11 @@ Prints Min spannning tree for a given graph.
 
 	Count = 0;
 	NumElements = Graph->RowCount;
-	DistanceArray = malloc(sizeof(ULONG) * NumElements);
+	DistanceArray = (PULONG)malloc(sizeof(ULONG) * NumElements);
 	i = 0;
 	Minimum = ULONG_MAX;
-	PreviousArray = malloc(sizeof(ULONG) * NumElements);
-	VisitedArray = malloc(sizeof(BOOLEAN) * NumElements);
+	PreviousArray = (PULONG)malloc(sizeof(ULONG) * NumElements);
+	VisitedArray = (PBOOLEAN)malloc(sizeof(BOOLEAN) * NumElements);
 
 	for (i = 0; i < NumElements; i++) {
 		DistanceArray[i] = ULONG_MAX;
@@ -291,6 +353,12 @@ GraphMinSpanningTreeKruskals(PGraph Graph)
 
 /**
 Minimum Spanning Tree using Kruskals.
+O(ELogE) = To Sort the edges.
+ O(VLogV) = Union Find implemented here can take O(LogV) or worst case O(V)
+ Total = O(ELogE) +  O(VLogV) 
+ |E| >= |V| - 1
+ Hence  O(ELogE) = O(VLogV)
+ Total =  O(ELogE) +  O(ELogE) = O(ELogE)
 **/
 
 {
@@ -316,9 +384,9 @@ Minimum Spanning Tree using Kruskals.
 	// Kruskals will anyways discard cycles.
 	//
 	NumEdges = (Graph->RowCount * (Graph->RowCount - 1)) / 2;
-	Edges = malloc(sizeof(Edge) * NumEdges);
+	Edges = (PEdge)malloc(sizeof(Edge) * NumEdges);
 	memset(Edges, 0, sizeof(Edge) * NumEdges);
-	ParentArray = malloc(sizeof(LONG) * NumEdges);
+	ParentArray = (PLONG)malloc(sizeof(LONG) * NumEdges);
 	Count = 0;
 
 	for (i = 0; i < NumEdges; i++) {
@@ -327,7 +395,7 @@ Minimum Spanning Tree using Kruskals.
 
 	for (i = 0; i < Graph->RowCount; i++) {
 		for (j = i + 1; j < Graph->RowCount; j++) {
-			if (Graph->matrix[i][j] != ULONG_MAX) {
+			if (Graph->matrix[i][j] != INVALID_MATRIX_ENTRY) {
 				Edges[Count].Src = i;
 				Edges[Count].Dst = j;
 				Edges[Count].Weight = Graph->matrix[i][j];
@@ -340,6 +408,7 @@ Minimum Spanning Tree using Kruskals.
 
 	//
 	// Sort the Edges using simple bubble sort
+    // Ideally should be sorted via nlogn approach.
 	//
 	for (i = 0; i < NumEdges - 1; i++) {
 		for (j = 0; j < NumEdges - i - 1; j++) {
@@ -380,4 +449,104 @@ Minimum Spanning Tree using Kruskals.
 			Union(ParentArray, Dst, Src);
 		}
 	}
+}
+
+BOOLEAN
+GraphiCheckHamiltonian(PLONG Array, ULONG NumElements, ULONG Vertex, ULONG Neighbor)
+
+{
+    for (unsigned int i = 0; i < NumElements; i++) {
+        if (Array[i] == Neighbor || Array[Neighbor] == Vertex) {
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+BOOLEAN
+GraphiHamiltonian(PLONG Array, ULONG Vertex, PGraph Graph, ULONG StartVertex)
+
+/**
+Internal driver for GraphDetectHamiltonianCycle.
+**/
+
+{
+    ULONG i;
+    BOOLEAN Continue;
+
+    Continue = FALSE;
+
+    //
+    // Base case
+    //
+    for (i = 0; i < Graph->ColumnCount; i++) {
+        if (Array[i] == -1) {
+            Continue = TRUE;
+            break;
+        }
+    }
+    if (Continue == FALSE) {
+        if (Array[Graph->ColumnCount - 1] == StartVertex) {
+            return TRUE;
+        } else {
+            return FALSE;
+        }
+    }
+    
+    for (i = 0; i < Graph->ColumnCount; i++) {
+        if (Graph->matrix[Vertex][i] != INVALID_MATRIX_ENTRY) {
+            if (GraphiCheckHamiltonian(Array, Graph->RowCount, Vertex, i) == TRUE) {
+                Array[Vertex] = i;
+                if (GraphiHamiltonian(Array, i, Graph, StartVertex) == FALSE) {
+                    //
+                    // BackTrack
+                    //
+                    Array[Vertex] = -1;
+                } else {
+                    return TRUE;
+                }
+            }
+        }
+    }
+
+    return FALSE;
+}
+
+BOOLEAN
+GraphDetectHamiltonianCycle(PGraph Graph, ULONG StartVertex)
+
+/**
+Determine if a graph contains Hamiltonian Cycle
+**/
+
+{
+    ULONG i;
+    ULONG NumElements;
+    ULONG Vertex;
+    PLONG Array;
+    BOOLEAN ReturnValue;
+
+    if (Graph == NULL) {
+        return FALSE;
+    }
+
+    NumElements = Graph->RowCount;
+    Array = (PLONG)malloc(sizeof(LONG) * NumElements);
+    for (i = 0; i < NumElements; i++) {
+        Array[i] = -1;
+    }
+
+    ReturnValue = GraphiHamiltonian(Array, 0, Graph, StartVertex);
+    if (ReturnValue == TRUE) {
+        wprintf(L"%d->", StartVertex);
+        for (i = 0; i < NumElements; i++) {
+            wprintf(L"%d->", Array[i]);
+        }
+        wprintf(L"\n");
+    }
+
+    free(Array);
+
+    return ReturnValue;
 }

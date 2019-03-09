@@ -431,7 +431,7 @@ iPartitionArray(PLONG Array, LONG Low, LONG High, LONG Pivot)
 	PivotValue = Array[Pivot];
 	Array[Pivot] = Array[High];
 	Array[High] = PivotValue;
-	Index = 0;
+	Index = Low;
 
 	for (int i = Low; i < High; i++) {
 		if (Array[i] > PivotValue) {
@@ -442,7 +442,7 @@ iPartitionArray(PLONG Array, LONG Low, LONG High, LONG Pivot)
 	}
 
 	temp = Array[High];
-	Array[High] = PivotValue;
+	Array[High] = Array[Index];
 	Array[Index] = temp;
 
 	return Index;

@@ -120,7 +120,7 @@
     <ClInclude Include="Graph.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Graph.c" />
+    <ClCompile Include="Graph.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
