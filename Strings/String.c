@@ -102,6 +102,10 @@ Size to be passed if the string is not null terminated.
 		size = StringiGetLength(string);
 	}
 
+    //
+    // Size-- for getting to the index of last 
+    // character
+    //
 	size--;
 	for (int i = 0; i <= size/2; i++) {
 		temp = string[i];
@@ -280,6 +284,9 @@ For Ascii strings only.
 			return FALSE;
 		}
 	}
+
+    // N.B Bug. It can be the case that string 2 has lesser character count
+    // You gotta check if the array is all 0 or not as well.
 
 	return TRUE;
 }
@@ -492,4 +499,79 @@ Assume string has extra space in the end if needed
 			PatternIndex = PatternCount - 1;
 		}
 	}
+}
+
+ULONG
+StringiLevenshteinDistance(__in const char* string1, ULONG Index1, __in const char* string2, ULONG Index2)
+
+/**
+Levenshtein Distance via recurrsive function.
+**/
+
+{
+    if (Index1 == 0 && Index2 == 0) {
+        return 0;
+    }
+
+    if (Index1 == 0) {
+        return Index2 + 1;
+    }
+
+    if (Index2 == 0) {
+        return Index1 + 1;
+    }
+    
+    if (string1[Index1 - 1] == string2[Index2 - 1]) {
+        return StringiLevenshteinDistance(string1, Index1 - 1, string2, Index2 - 1);
+    } else {
+        return 1 + min(StringiLevenshteinDistance(string1, Index1, string2, Index2 - 1),
+                       StringiLevenshteinDistance(string1, Index1 - 1, string2, Index2));
+    }
+}
+
+ULONG
+StringiLevenshteinDistanceNonRecursive(__in const char* string1, ULONG m, __in const char* string2, ULONG n)
+
+{
+    int **matrix;
+    unsigned int i;
+
+    matrix = (int**)malloc(sizeof(int*) * (m + 1));
+    for (i = 0; i <= m; i++) {
+        matrix[i] = (int*)malloc(sizeof(int) * (n + 1));
+    }
+
+    for (i = 0; i <= m; i++) {
+        for (unsigned int j = 0; j <= n; j++) {
+            if (i == 0) {
+                matrix[i][j] = j;
+                continue;
+            }
+
+            if (j == 0) {
+                matrix[i][j] = i;
+                continue;
+            }
+
+            if (string1[i - 1] == string2[j - 1]) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = 1 + min(matrix[i - 1][j], matrix[i][j - 1]);
+            }
+        }
+    }
+
+    return matrix[m][n];
+}
+
+ULONG
+StringLevenshteinDistance(__in const char* string1, __in const char* string2)
+
+/**
+Recurssive Method to find number of edits to convert string1 to string2
+**/
+
+{
+    return StringiLevenshteinDistance(string1, strlen(string1) - 1,
+                                      string2, strlen(string2)) - 1;
 }

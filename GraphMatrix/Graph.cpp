@@ -202,8 +202,8 @@ Can be improved to O(V + E) if used adjacency list.
 	vector[S] = TRUE;
 	wprintf(L"%c", 'a' + S);
 	for (unsigned int i = 0; i < graph->RowCount; i++) {
-		if (graph->matrix[S][i] != INVALID_MATRIX_ENTRY && vector[S] == FALSE) {
-			GraphDFS(graph, S, vector);
+		if (graph->matrix[S][i] != INVALID_MATRIX_ENTRY && vector[i] == FALSE) {
+			GraphDFS(graph, i, vector);
 		}
 	}
 }
@@ -456,7 +456,7 @@ GraphiCheckHamiltonian(PLONG Array, ULONG NumElements, ULONG Vertex, ULONG Neigh
 
 {
     for (unsigned int i = 0; i < NumElements; i++) {
-        if (Array[i] == Neighbor || Array[Neighbor] == Vertex) {
+        if (Array[i] == Neighbor || Array[Neighbor] == Vertex /*If already gone A to B then do no wanna goto B to A*/) {
             return FALSE;
         }
     }

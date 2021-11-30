@@ -39,3 +39,6 @@ Stringatoi_w(__in const wchar_t* string);
 
 VOID
 StringReplace(__in wchar_t* string, __in PUCHAR character, __in const wchar_t* pattern);
+
+ULONG
+StringLevenshteinDistance(__in const char* string1, __in const char* string2);

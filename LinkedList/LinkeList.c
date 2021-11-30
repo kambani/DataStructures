@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "LinkedList.h"
 
+
 NTSTATUS
 LinkedListInitialize(PLNode Head)
 
@@ -700,7 +701,7 @@ Returns the Node where Overlap hapens
 		//
 		Runner1 = ListOneLoop;
 		do {
-			if (Runner1 = ListTwoLoop) {
+			if (Runner1 == ListTwoLoop) {
 				return Runner1;
 			}
 

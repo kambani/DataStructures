@@ -81,6 +81,7 @@ Merge for Inversion Count.
             TempArray[Index++] = Array[i++];
         } else {
             TempArray[Index++] = Array[j++];
+            // Important Step
             *InversionCount = *InversionCount + (Mid - i + 1);
         }
     }
